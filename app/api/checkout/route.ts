@@ -37,10 +37,10 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ transactionId: transaction.id });
-  } catch (err) {
+  } catch (err: any) {
     console.error("Paddle checkout error:", err);
     return NextResponse.json(
-      { error: "Failed to create checkout session" },
+      { error: err.message || "Failed to create checkout session" },
       { status: 500 }
     );
   }

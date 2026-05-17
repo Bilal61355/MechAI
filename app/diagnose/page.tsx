@@ -44,8 +44,7 @@ export default function DiagnosePage() {
   const [isRecording, setIsRecording] = useState(false);
   const [imageBase64, setImageBase64] = useState("");
   
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
 
   const router = useRouter();
   const supabase = createClient();
@@ -59,6 +58,37 @@ export default function DiagnosePage() {
         setShowPaywall(true);
         window.history.replaceState(null, "", "/diagnose");
       }
+
+      // Initialize SpeechRecognition
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        recognition.onresult = (event: any) => {
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            }
+          }
+          if (finalTranscript) {
+            setSymptom((prev) => prev + (prev ? " " : "") + finalTranscript);
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error", event.error);
+          setIsRecording(false);
+        };
+        
+        recognition.onend = () => {
+          setIsRecording(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
     }
   }, []);
 
@@ -68,48 +98,22 @@ export default function DiagnosePage() {
     router.refresh();
   };
 
-  const handleStartRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
-        const file = new File([audioBlob], "audio.webm", { type: "audio/webm" });
-        
-        const formData = new FormData();
-        formData.append("file", file);
-
+  const toggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+    } else {
+      if (recognitionRef.current) {
         try {
-          const res = await fetch("/api/transcribe", { method: "POST", body: formData });
-          const data = await res.json();
-          if (data.text) {
-            setSymptom(prev => prev + (prev ? " " : "") + data.text);
-          }
-        } catch (error) {
-          console.error("Transcription failed", error);
+          recognitionRef.current.start();
+          setIsRecording(true);
+        } catch (e) {
+          console.error("Speech recognition start error:", e);
         }
-        
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (err) {
-      console.error("Error accessing microphone", err);
-      alert("Could not access microphone.");
+      } else {
+        alert("Your browser does not support Speech Recognition. Please use Chrome or Edge.");
+      }
     }
-  };
-
-  const handleStopRecording = () => {
-    mediaRecorderRef.current?.stop();
-    setIsRecording(false);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -238,26 +242,42 @@ export default function DiagnosePage() {
         </div>
 
         {/* Symptom */}
-        <div style={{ marginBottom: "1rem" }}>
+        <div style={{ position: "relative", marginBottom: "1rem" }}>
           <label style={{ fontSize: "0.72rem", color: "rgba(240,237,232,0.35)", letterSpacing: "0.06em", textTransform: "uppercase", display: "block", marginBottom: "0.4rem" }}>Describe the symptom</label>
           <textarea
             rows={4}
             placeholder="e.g. Engine makes a khtak khtak sound above 40kmph, feels weak on acceleration, no smoke..."
             value={symptom}
             onChange={e => setSymptom(e.target.value)}
+            style={{ paddingBottom: "2.5rem", width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0ede8", borderRadius: "8px", padding: "0.75rem 1rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.95rem", outline: "none" }}
           />
+          <button
+            onClick={toggleRecording}
+            title={isRecording ? "Stop recording" : "Start voice typing"}
+            style={{
+              position: "absolute",
+              bottom: "0.8rem",
+              right: "0.8rem",
+              background: isRecording ? "rgba(232,93,38,0.2)" : "transparent",
+              border: "none",
+              color: isRecording ? "#e85d26" : "rgba(240,237,232,0.4)",
+              cursor: "pointer",
+              borderRadius: "50%",
+              width: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "all 0.2s"
+            }}
+          >
+            {isRecording && <span className="pulse" style={{ width: "16px", height: "16px", position: "absolute" }} />}
+            <span style={{ fontSize: "1.1rem", position: "relative", zIndex: 2 }}>🎤</span>
+          </button>
         </div>
 
         {/* Multimodal inputs */}
         <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-          <button 
-            onClick={isRecording ? handleStopRecording : handleStartRecording}
-            style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: isRecording ? "rgba(232,93,38,0.2)" : "rgba(255,255,255,0.05)", border: `1px solid ${isRecording ? "#e85d26" : "rgba(255,255,255,0.1)"}`, padding: "0.6rem 1rem", borderRadius: "8px", color: isRecording ? "#e85d26" : "#f0ede8", cursor: "pointer", transition: "all 0.2s" }}
-          >
-            {isRecording ? <span className="pulse" style={{ width: "8px", height: "8px" }} /> : <span>🎤</span>}
-            {isRecording ? "Stop Recording" : "Voice Note"}
-          </button>
-          
           <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.6rem 1rem", borderRadius: "8px", color: "#f0ede8", cursor: "pointer", transition: "all 0.2s" }}>
             <span>📷</span> Upload Photo
             <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
