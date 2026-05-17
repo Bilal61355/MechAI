@@ -80,6 +80,11 @@ export default function DiagnosePage() {
 
         recognition.onerror = (event: any) => {
           console.error("Speech recognition error", event.error);
+          if (event.error === "not-allowed") {
+            alert("Microphone access was denied. Please allow microphone permissions in your browser.");
+          } else {
+            alert(`Speech recognition stopped: ${event.error}. Ensure you are on HTTPS or localhost.`);
+          }
           setIsRecording(false);
         };
         
@@ -249,7 +254,7 @@ export default function DiagnosePage() {
             placeholder="e.g. Engine makes a khtak khtak sound above 40kmph, feels weak on acceleration, no smoke..."
             value={symptom}
             onChange={e => setSymptom(e.target.value)}
-            style={{ paddingBottom: "2.5rem", width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0ede8", borderRadius: "8px", padding: "0.75rem 1rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.95rem", outline: "none" }}
+            style={{ resize: "none", paddingBottom: "2.5rem", width: "100%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#f0ede8", borderRadius: "8px", padding: "0.75rem 1rem", fontFamily: "'DM Sans', sans-serif", fontSize: "0.95rem", outline: "none" }}
           />
           <button
             onClick={toggleRecording}

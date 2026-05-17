@@ -206,7 +206,14 @@ export default function Home() {
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
               <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>About Us</a>
               <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Careers</a>
-              <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Privacy Policy</a>
+            </div>
+          </div>
+          <div>
+            <h4 style={{ color: "#f0ede8", fontWeight: 600, fontSize: "0.95rem", marginBottom: "1rem" }}>Legal</h4>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              <a href="/terms" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Terms of Service</a>
+              <a href="/privacy" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Privacy Policy</a>
+              <a href="/refund" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Refund Policy</a>
             </div>
           </div>
           <div>
@@ -214,7 +221,6 @@ export default function Home() {
             <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
               <a href="mailto:support@mechanicai.in" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>support@mechanicai.in</a>
               <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Contact Us</a>
-              <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>FAQ</a>
             </div>
           </div>
         </div>
