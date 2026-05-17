@@ -1,7 +1,28 @@
 "use client";
+import { useState, useEffect } from "react";
 import FloatingTools from "@/components/FloatingTools";
+import { createClient } from "@/utils/supabase/client";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const [userEmail, setUserEmail] = useState("");
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function checkAuth() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) setUserEmail(user.email ?? "");
+    }
+    checkAuth();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    setUserEmail("");
+    router.refresh();
+  };
 
   return (
     <div style={{ background: "#080808", minHeight: "100vh", color: "#f0ede8", fontFamily: "'DM Sans', sans-serif", overflowX: "hidden", cursor: "none" }}>
@@ -36,12 +57,25 @@ export default function Home() {
         <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.2rem", letterSpacing: "-0.02em" }}>
           Mechanic<span style={{ color: "#e85d26" }}>AI</span>
         </div>
-        <div style={{ display: "flex", gap: "2rem", alignItems: "center" }}>
-          {["How it works", "Pricing", "For Workshops"].map(l => (
-            <a key={l} href="#" style={{ fontSize: "0.82rem", color: "rgba(240,237,232,0.4)", textDecoration: "none" }}>{l}</a>
-          ))}
+        <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+          <a href="/diagnose" style={{ fontSize: "0.85rem", color: "rgba(240,237,232,0.45)", textDecoration: "none" }}>New Diagnosis</a>
+          {userEmail ? (
+            <>
+              <a href="/history" style={{ fontSize: "0.85rem", color: "rgba(240,237,232,0.45)", textDecoration: "none" }}>History</a>
+              <span style={{ fontSize: "0.78rem", color: "rgba(240,237,232,0.2)", maxWidth: "180px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {userEmail}
+              </span>
+              <button onClick={handleSignOut} style={{ background: "none", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "6px", padding: "0.4rem 0.9rem", color: "rgba(240,237,232,0.4)", fontFamily: "'DM Sans', sans-serif", fontSize: "0.82rem", cursor: "pointer" }}>
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <>
+              <a href="/login" style={{ fontSize: "0.85rem", color: "rgba(240,237,232,0.45)", textDecoration: "none" }}>Log In</a>
+              <button onClick={() => router.push("/login")} className="btn-primary" style={{ padding: "0.45rem 1.1rem", fontSize: "0.82rem", cursor: "pointer" }}>Sign Up</button>
+            </>
+          )}
         </div>
-        <button className="btn-primary" style={{ padding: "0.45rem 1.1rem", fontSize: "0.82rem" }}>Get Early Access</button>
       </nav>
 
       {/* Hero */}
@@ -54,13 +88,13 @@ export default function Home() {
           Describe what&apos;s wrong. We diagnose your vehicle, reveal the real cost, and arm you with exactly what to say to the mechanic.
         </p>
         <div style={{ display: "flex", gap: "0.9rem" }}>
-          <button className="btn-primary">Diagnose my vehicle</button>
-          <button className="btn-ghost">Watch demo</button>
+          <button onClick={() => router.push("/diagnose")} className="btn-primary" style={{ cursor: "pointer" }}>Diagnose my vehicle</button>
+          <a href="#demo" className="btn-ghost" style={{ textDecoration: "none", cursor: "pointer" }}>Watch demo</a>
         </div>
       </section>
 
       {/* Demo + Features below */}
-      <section style={{ position: "relative", zIndex: 5, padding: "4rem 3rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", maxWidth: "1100px" }}>
+      <section id="demo" style={{ position: "relative", zIndex: 5, padding: "4rem 3rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", maxWidth: "1100px" }}>
         {/* Demo chat */}
         <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: "16px", padding: "1.75rem" }}>
           <div style={{ fontSize: "0.68rem", textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(240,237,232,0.25)", marginBottom: "1.25rem" }}>Live demo</div>
