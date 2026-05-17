@@ -137,7 +137,7 @@ export default function Home() {
       </section>
 
       {/* Stats bar */}
-      <div style={{ position: "relative", zIndex: 5, borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "2rem 3rem", display: "flex", gap: "3rem", alignItems: "center" }}>
+      <div style={{ position: "relative", zIndex: 5, borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "2rem 3rem", display: "flex", gap: "3rem", alignItems: "center", justifyContent: "center" }}>
         {[
           { val: "₹3,200", label: "Avg. saved per visit" },
           { val: "12K+", label: "Diagnoses done" },
@@ -163,14 +163,16 @@ export default function Home() {
           <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: "150px", height: "150px", background: "rgba(232,93,38,0.2)", filter: "blur(60px)", borderRadius: "50%" }} />
           
           <h3 style={{ fontSize: "1.4rem", fontWeight: 700, marginBottom: "0.5rem" }}>MechanicAI Pro</h3>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.2rem", marginBottom: "2rem" }}>
-            <span style={{ fontSize: "2.5rem", fontFamily: "'Syne', sans-serif", fontWeight: 800, color: "#e85d26" }}>₹99</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.2rem", marginBottom: "0.5rem" }}>
+            <span style={{ fontSize: "2.5rem", fontFamily: "'Syne', sans-serif", fontWeight: 800, color: "#e85d26" }}>₹199</span>
             <span style={{ color: "rgba(240,237,232,0.4)" }}>/month</span>
           </div>
+          <div style={{ fontSize: "0.85rem", color: "#4caf50", fontWeight: 500, marginBottom: "2rem" }}>Includes 1 Day Free Trial</div>
           
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem", textAlign: "left", maxWidth: "300px", margin: "0 auto 2.5rem" }}>
             {[
               "Unlimited AI diagnoses",
+              "Voice & Photo diagnosis",
               "City-specific fair price estimates",
               "Red flag upsell detector",
               "Complete diagnosis history",
@@ -182,7 +184,7 @@ export default function Home() {
             ))}
           </div>
           
-          <button onClick={() => router.push(userEmail ? "/diagnose" : "/login")} className="btn-primary" style={{ width: "100%", maxWidth: "300px", cursor: "pointer", padding: "1rem" }}>
+          <button onClick={() => router.push(userEmail ? "/diagnose?upgrade=true" : "/login?next=/diagnose%3Fupgrade=true")} className="btn-primary" style={{ width: "100%", maxWidth: "300px", cursor: "pointer", padding: "1rem" }}>
             {userEmail ? "Upgrade to Pro" : "Get Started Now"}
           </button>
         </div>

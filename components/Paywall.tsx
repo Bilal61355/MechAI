@@ -149,7 +149,7 @@ export default function Paywall({ onClose, onSuccess }: PaywallProps) {
         </ul>
 
         {/* Price */}
-        <div style={{ textAlign: "center", marginBottom: "1.25rem" }}>
+        <div style={{ textAlign: "center", marginBottom: "0.5rem" }}>
           <span
             style={{
               fontFamily: "'Syne', sans-serif",
@@ -158,12 +158,13 @@ export default function Paywall({ onClose, onSuccess }: PaywallProps) {
               color: "#e85d26",
             }}
           >
-            ₹99
+            ₹199
           </span>
           <span style={{ fontSize: "0.85rem", color: "rgba(240,237,232,0.35)" }}>
             /month
           </span>
         </div>
+        <div style={{ textAlign: "center", fontSize: "0.85rem", color: "#4caf50", fontWeight: 500, marginBottom: "1.25rem" }}>Includes 1 Day Free Trial</div>
 
         {error && (
           <p
@@ -201,7 +202,7 @@ export default function Paywall({ onClose, onSuccess }: PaywallProps) {
             ? "Opening checkout..."
             : !paddle
             ? "Loading..."
-            : "Unlock Pro — ₹99/month →"}
+            : "Unlock Pro — ₹199/month →"}
         </button>
 
         <p

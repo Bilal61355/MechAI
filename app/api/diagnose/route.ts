@@ -41,9 +41,9 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 3. Parse request ───────────────────────────────────────────────────────
-  const { brand, model, year, symptom } = await req.json();
+  const { brand, model, year, symptom, image } = await req.json();
 
-  const prompt = `You are MechanicAI, an expert Indian vehicle mechanic assistant. A user has a ${year} ${brand} ${model} and describes this symptom: "${symptom}"
+  const prompt = `You are MechanicAI, an expert Indian vehicle mechanic assistant. A user has a ${year} ${brand} ${model} and describes this symptom: "${symptom}"${image ? " They have also attached a photo of the problem area or dashboard warning." : ""}
 
 Respond ONLY with a JSON object, no explanation, no markdown, no backticks. Just raw JSON:
 {
@@ -58,6 +58,15 @@ Respond ONLY with a JSON object, no explanation, no markdown, no backticks. Just
 
   try {
     // ── 4. Groq API call ────────────────────────────────────────────────────
+    const modelToUse = image ? "llama-3.2-90b-vision-preview" : "llama-3.3-70b-versatile";
+    
+    const userMessageContent = image 
+      ? [
+          { type: "text", text: prompt },
+          { type: "image_url", image_url: { url: image } }
+        ]
+      : prompt;
+
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -65,13 +74,13 @@ Respond ONLY with a JSON object, no explanation, no markdown, no backticks. Just
         "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
+        model: modelToUse,
         messages: [
           {
             role: "system",
             content: "You are a JSON-only API. You never respond with anything except valid raw JSON. No markdown, no backticks, no explanation."
           },
-          { role: "user", content: prompt }
+          { role: "user", content: userMessageContent }
         ],
         temperature: 0.3,
         max_tokens: 600,

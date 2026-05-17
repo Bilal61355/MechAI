@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import FloatingTools from "@/components/FloatingTools";
 import Paywall from "@/components/Paywall";
 import { createClient } from "@/utils/supabase/client";
@@ -41,10 +41,26 @@ export default function DiagnosePage() {
   const [result, setResult]     = useState<Result | null>(null);
   const [error, setError]       = useState("");
   const [showPaywall, setShowPaywall] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [imageBase64, setImageBase64] = useState("");
+  
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   const router = useRouter();
   const supabase = createClient();
 
   const models = brand ? BRANDS[brand] : [];
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("upgrade") === "true") {
+        setShowPaywall(true);
+        window.history.replaceState(null, "", "/diagnose");
+      }
+    }
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -52,16 +68,69 @@ export default function DiagnosePage() {
     router.refresh();
   };
 
+  const handleStartRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" });
+        const file = new File([audioBlob], "audio.webm", { type: "audio/webm" });
+        
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const res = await fetch("/api/transcribe", { method: "POST", body: formData });
+          const data = await res.json();
+          if (data.text) {
+            setSymptom(prev => prev + (prev ? " " : "") + data.text);
+          }
+        } catch (error) {
+          console.error("Transcription failed", error);
+        }
+        
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (err) {
+      console.error("Error accessing microphone", err);
+      alert("Could not access microphone.");
+    }
+  };
+
+  const handleStopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImageBase64(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
   const diagnose = async () => {
-    if (!brand || !model || !year || !symptom.trim()) {
-      setError("Please fill in all fields."); return;
+    if (!brand || !model || !year || (!symptom.trim() && !imageBase64)) {
+      setError("Please describe the symptom or upload a photo."); return;
     }
     setError(""); setLoading(true); setResult(null);
     try {
       const res = await fetch("/api/diagnose", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ brand, model, year, symptom }),
+        body: JSON.stringify({ brand, model, year, symptom, image: imageBase64 }),
       });
 
       if (res.status === 401) {
@@ -115,6 +184,8 @@ export default function DiagnosePage() {
           width: 8px; height: 8px; border-radius: 50%;
           display: inline-block;
         }
+        .pulse { width: 8px; height: 8px; background: #e85d26; border-radius: 50%; animation: pulse 1.5s infinite; display: inline-block; }
+        @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.3; transform:scale(0.8); } }
       `}</style>
 
       {showPaywall && <Paywall onClose={() => setShowPaywall(false)} />}
@@ -167,7 +238,7 @@ export default function DiagnosePage() {
         </div>
 
         {/* Symptom */}
-        <div style={{ marginBottom: "1.5rem" }}>
+        <div style={{ marginBottom: "1rem" }}>
           <label style={{ fontSize: "0.72rem", color: "rgba(240,237,232,0.35)", letterSpacing: "0.06em", textTransform: "uppercase", display: "block", marginBottom: "0.4rem" }}>Describe the symptom</label>
           <textarea
             rows={4}
@@ -176,6 +247,30 @@ export default function DiagnosePage() {
             onChange={e => setSymptom(e.target.value)}
           />
         </div>
+
+        {/* Multimodal inputs */}
+        <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+          <button 
+            onClick={isRecording ? handleStopRecording : handleStartRecording}
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: isRecording ? "rgba(232,93,38,0.2)" : "rgba(255,255,255,0.05)", border: `1px solid ${isRecording ? "#e85d26" : "rgba(255,255,255,0.1)"}`, padding: "0.6rem 1rem", borderRadius: "8px", color: isRecording ? "#e85d26" : "#f0ede8", cursor: "pointer", transition: "all 0.2s" }}
+          >
+            {isRecording ? <span className="pulse" style={{ width: "8px", height: "8px" }} /> : <span>🎤</span>}
+            {isRecording ? "Stop Recording" : "Voice Note"}
+          </button>
+          
+          <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", padding: "0.6rem 1rem", borderRadius: "8px", color: "#f0ede8", cursor: "pointer", transition: "all 0.2s" }}>
+            <span>📷</span> Upload Photo
+            <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} />
+          </label>
+        </div>
+
+        {imageBase64 && (
+          <div style={{ marginBottom: "1.5rem", position: "relative", display: "inline-block" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={imageBase64} alt="Vehicle issue" style={{ height: "80px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.1)", objectFit: "cover" }} />
+            <button onClick={() => setImageBase64("")} style={{ position: "absolute", top: "-8px", right: "-8px", background: "#e85d26", color: "#fff", border: "none", borderRadius: "50%", width: "24px", height: "24px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          </div>
+        )}
 
         {error && <p style={{ color: "#e85d26", fontSize: "0.85rem", marginBottom: "1rem" }}>{error}</p>}
 
