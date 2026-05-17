@@ -58,7 +58,7 @@ export default function Home() {
           Mechanic<span style={{ color: "#e85d26" }}>AI</span>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-          <a href="/diagnose" style={{ fontSize: "0.85rem", color: "rgba(240,237,232,0.45)", textDecoration: "none" }}>New Diagnosis</a>
+          <a href="#pricing" style={{ fontSize: "0.85rem", color: "rgba(240,237,232,0.45)", textDecoration: "none", transition: "color 0.2s" }} onMouseOver={e => e.currentTarget.style.color="#f0ede8"} onMouseOut={e => e.currentTarget.style.color="rgba(240,237,232,0.45)"}>Pricing</a>
           {userEmail ? (
             <>
               <a href="/history" style={{ fontSize: "0.85rem", color: "rgba(240,237,232,0.45)", textDecoration: "none" }}>History</a>
@@ -137,7 +137,7 @@ export default function Home() {
       </section>
 
       {/* Stats bar */}
-      <div style={{ position: "relative", zIndex: 5, borderTop: "1px solid rgba(255,255,255,0.05)", padding: "2rem 3rem", display: "flex", gap: "3rem", alignItems: "center" }}>
+      <div style={{ position: "relative", zIndex: 5, borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)", padding: "2rem 3rem", display: "flex", gap: "3rem", alignItems: "center" }}>
         {[
           { val: "₹3,200", label: "Avg. saved per visit" },
           { val: "12K+", label: "Diagnoses done" },
@@ -152,6 +152,74 @@ export default function Home() {
           </div>
         ))}
       </div>
+
+      {/* Pricing Section */}
+      <section id="pricing" style={{ position: "relative", zIndex: 5, padding: "5rem 3rem", maxWidth: "800px", margin: "0 auto", textAlign: "center" }}>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "2.5rem", marginBottom: "1rem" }}>Simple, honest pricing</h2>
+        <p style={{ color: "rgba(240,237,232,0.45)", marginBottom: "3rem" }}>Don&apos;t pay thousands in mechanic scams. Get unlimited peace of mind.</p>
+        
+        <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(232,93,38,0.3)", borderRadius: "16px", padding: "3rem", position: "relative", overflow: "hidden" }}>
+          {/* Subtle glow */}
+          <div style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", width: "150px", height: "150px", background: "rgba(232,93,38,0.2)", filter: "blur(60px)", borderRadius: "50%" }} />
+          
+          <h3 style={{ fontSize: "1.4rem", fontWeight: 700, marginBottom: "0.5rem" }}>MechanicAI Pro</h3>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.2rem", marginBottom: "2rem" }}>
+            <span style={{ fontSize: "2.5rem", fontFamily: "'Syne', sans-serif", fontWeight: 800, color: "#e85d26" }}>₹99</span>
+            <span style={{ color: "rgba(240,237,232,0.4)" }}>/month</span>
+          </div>
+          
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", textAlign: "left", maxWidth: "300px", margin: "0 auto 2.5rem" }}>
+            {[
+              "Unlimited AI diagnoses",
+              "City-specific fair price estimates",
+              "Red flag upsell detector",
+              "Complete diagnosis history",
+              "Cancel anytime"
+            ].map((f, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.8rem", color: "rgba(240,237,232,0.8)" }}>
+                <span style={{ color: "#e85d26" }}>✓</span> {f}
+              </div>
+            ))}
+          </div>
+          
+          <button onClick={() => router.push(userEmail ? "/diagnose" : "/login")} className="btn-primary" style={{ width: "100%", maxWidth: "300px", cursor: "pointer", padding: "1rem" }}>
+            {userEmail ? "Upgrade to Pro" : "Get Started Now"}
+          </button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer style={{ position: "relative", zIndex: 5, padding: "4rem 3rem 2rem", borderTop: "1px solid rgba(255,255,255,0.05)", background: "rgba(0,0,0,0.2)" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "2rem", marginBottom: "3rem" }}>
+          <div>
+            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: "1.2rem", letterSpacing: "-0.02em", marginBottom: "1rem" }}>
+              Mechanic<span style={{ color: "#e85d26" }}>AI</span>
+            </div>
+            <p style={{ color: "rgba(240,237,232,0.4)", fontSize: "0.85rem", lineHeight: 1.6 }}>
+              India&apos;s first AI mechanic. Never get cheated at a service center again.
+            </p>
+          </div>
+          <div>
+            <h4 style={{ color: "#f0ede8", fontWeight: 600, fontSize: "0.95rem", marginBottom: "1rem" }}>Company</h4>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>About Us</a>
+              <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Careers</a>
+              <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Privacy Policy</a>
+            </div>
+          </div>
+          <div>
+            <h4 style={{ color: "#f0ede8", fontWeight: 600, fontSize: "0.95rem", marginBottom: "1rem" }}>Support</h4>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+              <a href="mailto:support@mechanicai.in" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>support@mechanicai.in</a>
+              <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>Contact Us</a>
+              <a href="#" style={{ color: "rgba(240,237,232,0.4)", textDecoration: "none", fontSize: "0.85rem" }}>FAQ</a>
+            </div>
+          </div>
+        </div>
+        <div style={{ textAlign: "center", color: "rgba(240,237,232,0.2)", fontSize: "0.8rem" }}>
+          © {new Date().getFullYear()} MechanicAI. All rights reserved.
+        </div>
+      </footer>
     </div>
   );
 }
